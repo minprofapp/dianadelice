@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Orders are created only through the `passer_commande` database function (security definer) so prices, minimums and delivery fees are re-checked server-side; there is no direct insert policy on `commandes`.
+- Customer order tracking goes through `suivre_commande(numero, telephone)`; `commandes` rows are readable only by admins.
+- Admin access = row in `public.user_roles` with role `admin`; the first account ever created is promoted automatically by a trigger.
+- Business rules (minimum amount, totals, WhatsApp message) live in `src/lib/commande.ts` with tests in `src/lib/commande.test.ts`.
+- Installable via `public/manifest.webmanifest` only (no service worker) to keep previews safe.
