@@ -15,6 +15,8 @@ import {
   nettoyerTelephone,
   telephoneValide,
   MONTANT_MIN,
+  MONTANT_MAX,
+  verifierMontant,
 } from "@/lib/commande";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +56,7 @@ type Erreurs = Partial<Record<keyof z.infer<typeof schema>, string>>;
 
 function Panier() {
   const { data: zones } = useSuspenseQuery(zonesQuery);
-  const { articles, retirer, vider } = usePanier();
+  const { articles, retirer, modifierMontant, vider } = usePanier();
   const [form, setForm] = useState({ nom: "", telephone: "", zoneId: "", repere: "", note: "" });
   const [erreurs, setErreurs] = useState<Erreurs>({});
   const [envoi, setEnvoi] = useState(false);
@@ -88,6 +90,12 @@ function Panier() {
     if (articles.length === 0) return;
     if (sousTotal < MONTANT_MIN) {
       toast.error(`Faut au moins ${formatFCFA(MONTANT_MIN)} pour commander`);
+      return;
+    }
+    const articleInvalide = articles.find((a) => verifierMontant(a.montant) !== null);
+    if (articleInvalide) {
+      const msg = verifierMontant(articleInvalide.montant);
+      toast.error(`Montant pour « ${articleInvalide.nom} » : ${msg}`);
       return;
     }
     const res = schema.safeParse(form);
@@ -196,32 +204,86 @@ function Panier() {
         ) : (
           <form onSubmit={commander} className="space-y-5" noValidate>
             <section className="divide-y overflow-hidden rounded-3xl border bg-card shadow-soft animate-fade-up">
-              {articles.map((a, i) => (
-                <div
-                  key={a.cle}
-                  className="flex items-center gap-3 p-4 animate-glisse"
-                  style={{ ["--d" as string]: `${i * 70}ms` }}
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
-                    <Icone nom="sr:cookie" className="text-xl text-gold" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold">{a.nom}</p>
-                    {a.format && <p className="text-sm text-muted-foreground">{a.format}</p>}
-                  </div>
-                  <p className="whitespace-nowrap font-bold">{formatFCFA(a.montant)}</p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 rounded-xl text-muted-foreground"
-                    onClick={() => retirer(a.cle)}
-                    aria-label={`Retirer ${a.nom}`}
+              {articles.map((a, i) => {
+                const errMontant = verifierMontant(a.montant);
+                return (
+                  <div
+                    key={a.cle}
+                    className="p-4 animate-glisse space-y-3"
+                    style={{ ["--d" as string]: `${i * 70}ms` }}
                   >
-                    <Icone nom="rr:trash" className="text-xl transition-colors hover:text-destructive" />
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                        <Icone nom="sr:cookie" className="text-xl text-gold" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold">{a.nom}</p>
+                        {a.format && <p className="text-sm text-muted-foreground">{a.format}</p>}
+                      </div>
+                      <p className="whitespace-nowrap font-extrabold text-primary">{formatFCFA(a.montant)}</p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-11 w-11 rounded-xl text-muted-foreground hover:text-destructive"
+                        onClick={() => retirer(a.cle)}
+                        aria-label={`Retirer ${a.nom}`}
+                      >
+                        <Icone nom="rr:trash" className="text-xl transition-colors hover:text-destructive" />
+                      </Button>
+                    </div>
+
+                    {/* Saisie ou ajustement libre du montant par le client dans le panier */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-muted/60 px-3 py-2 text-xs">
+                      <span className="font-semibold text-muted-foreground">Modifier le montant :</span>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2 text-xs font-bold"
+                          disabled={a.montant <= MONTANT_MIN}
+                          onClick={() => modifierMontant(a.cle, Math.max(MONTANT_MIN, a.montant - 500))}
+                          title="-500 FCFA"
+                        >
+                          -500F
+                        </Button>
+                        <div className="relative w-28">
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            min={MONTANT_MIN}
+                            max={MONTANT_MAX}
+                            step={50}
+                            value={a.montant || ""}
+                            onChange={(e) => {
+                              const propre = e.target.value.replace(/\D/g, "").slice(0, 6);
+                              modifierMontant(a.cle, propre ? Number(propre) : 0);
+                            }}
+                            className={cn(
+                              "h-8 text-center text-xs font-extrabold px-1",
+                              errMontant && "border-destructive text-destructive",
+                            )}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2 text-xs font-bold"
+                          onClick={() => modifierMontant(a.cle, a.montant + 500)}
+                          title="+500 FCFA"
+                        >
+                          +500F
+                        </Button>
+                      </div>
+                    </div>
+                    {errMontant && (
+                      <p className="text-xs font-bold text-destructive animate-glisse">{errMontant}</p>
+                    )}
+                  </div>
+                );
+              })}
             </section>
 
             <Apparait as="section" delaiMs={100} className="space-y-4 rounded-3xl border bg-card p-4 shadow-soft">

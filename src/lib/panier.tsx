@@ -9,6 +9,7 @@ type PanierContexte = {
   sousTotal: number;
   ajouter: (a: Omit<ArticlePanier, "cle">) => void;
   retirer: (cle: string) => void;
+  modifierMontant: (cle: string, montant: number) => void;
   vider: () => void;
 };
 
@@ -46,6 +47,11 @@ export function PanierProvider({ children }: { children: ReactNode }) {
   const retirer = useCallback((cle: string) => {
     setArticles((prev) => prev.filter((a) => a.cle !== cle));
   }, []);
+  const modifierMontant = useCallback((cle: string, montant: number) => {
+    setArticles((prev) =>
+      prev.map((a) => (a.cle === cle ? { ...a, montant: Math.round(montant) } : a)),
+    );
+  }, []);
   const vider = useCallback(() => setArticles([]), []);
 
   const valeur = useMemo(
@@ -55,9 +61,10 @@ export function PanierProvider({ children }: { children: ReactNode }) {
       sousTotal: articles.reduce((s, a) => s + a.montant, 0),
       ajouter,
       retirer,
+      modifierMontant,
       vider,
     }),
-    [articles, ajouter, retirer, vider],
+    [articles, ajouter, retirer, modifierMontant, vider],
   );
 
   return <Ctx.Provider value={valeur}>{children}</Ctx.Provider>;

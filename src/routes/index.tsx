@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { produitsQuery, zonesQuery } from "@/lib/catalogue";
 import { CarteProduit } from "@/components/CarteProduit";
+import { SaisieMontantExpress } from "@/components/SaisieMontantExpress";
 import { BarrePanier } from "@/components/BarrePanier";
 import { CarrouselHero } from "@/components/CarrouselHero";
 import { MachineAEcrire } from "@/components/MachineAEcrire";
@@ -139,6 +140,12 @@ function Accueil() {
             Choisis ton montant, à partir de 500F par article.
           </Apparait>
         </div>
+
+        {produits.length > 0 && (
+          <Apparait type="zoom" delaiMs={100}>
+            <SaisieMontantExpress produits={produits} />
+          </Apparait>
+        )}
 
         {produits.length === 0 ? (
           <Apparait as="p" className="rounded-2xl bg-muted p-6 text-center text-muted-foreground">

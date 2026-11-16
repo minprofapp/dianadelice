@@ -8,15 +8,35 @@ import {
   verifierMontant,
 } from "./commande";
 
-describe("montant minimum de 500 FCFA", () => {
-  it("refuse 499 FCFA", () => {
-    expect(verifierMontant(499)).not.toBeNull();
+describe("montant minimum de 500 FCFA et saisie libre par le client", () => {
+  it("refuse null ou indéfini", () => {
+    expect(verifierMontant(null)).toBe("Indiquez un montant");
+    expect(verifierMontant(undefined)).toBe("Indiquez un montant");
+    expect(verifierMontant(NaN)).toBe("Indiquez un montant");
+  });
+  it("refuse un montant avec centimes", () => {
+    expect(verifierMontant(1250.5)).toBe("Montant sans centimes, s'il vous plaît");
+  });
+  it("refuse moins de 500 FCFA", () => {
+    expect(verifierMontant(499)).toBe("Minimum 500 FCFA");
+    expect(verifierMontant(0)).toBe("Minimum 500 FCFA");
+    expect(verifierMontant(-100)).toBe("Minimum 500 FCFA");
+  });
+  it("refuse plus de 100 000 FCFA", () => {
+    expect(verifierMontant(100001)).toBe("Maximum 100 000 FCFA");
   });
   it("accepte 500 FCFA", () => {
     expect(verifierMontant(500)).toBeNull();
   });
-  it("accepte un montant libre comme 2 750 FCFA", () => {
+  it("accepte des montants libres saisis par le client (ex: 2 750, 3 500, 5 000 FCFA)", () => {
+    expect(verifierMontant(1000)).toBeNull();
+    expect(verifierMontant(1500)).toBeNull();
+    expect(verifierMontant(2000)).toBeNull();
     expect(verifierMontant(2750)).toBeNull();
+    expect(verifierMontant(3500)).toBeNull();
+    expect(verifierMontant(5000)).toBeNull();
+    expect(verifierMontant(10000)).toBeNull();
+    expect(verifierMontant(100000)).toBeNull();
   });
 });
 

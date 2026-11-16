@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MONTANTS_RAPIDES, MONTANT_MIN, formatFCFA, verifierMontant } from "@/lib/commande";
+import { MONTANTS_RAPIDES, MONTANT_MIN, MONTANT_MAX, formatFCFA, verifierMontant } from "@/lib/commande";
 import { usePanier } from "@/lib/panier";
 import { cn } from "@/lib/utils";
 import { Icone } from "@/components/Icone";
@@ -36,6 +36,8 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
 
   // Variantes ou formats
   const aDesVariantes = enrichi.variantes.length > 0;
+  const formatsDispos = aDesVariantes ? enrichi.variantes.map((v) => v.nom) : enrichi.formats;
+  const aPlusieursFormats = formatsDispos.length > 1;
   const varianteInitiale = aDesVariantes ? enrichi.variantes[0] : null;
 
   const [varianteChoisie, setVarianteChoisie] = useState<string | null>(
@@ -54,8 +56,10 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
     if (aDesVariantes) {
       const v = enrichi.variantes.find((item) => item.nom === nomFormat);
       if (v) {
-        setMontant(v.prix);
-        setSaisie("");
+        // Si aucune saisie personnalisée n'est en cours, suggérer le prix par défaut
+        if (!saisie) {
+          setMontant(v.prix);
+        }
         setErreur(null);
       }
     }
@@ -70,14 +74,21 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
   function changerSaisie(v: string) {
     const propre = v.replace(/\D/g, "").slice(0, 6);
     setSaisie(propre);
-    setMontant(propre ? Number(propre) : null);
-    setErreur(null);
+    if (propre) {
+      const m = Number(propre);
+      setMontant(m);
+      setErreur(verifierMontant(m));
+    } else {
+      setMontant(null);
+      setErreur("Indiquez un montant");
+    }
   }
 
   function ajouterAuPanier() {
     const e = verifierMontant(montant);
     if (e) {
       setErreur(e);
+      toast.error(e);
       return;
     }
     ajouter({
@@ -191,14 +202,14 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
 
         {estDisponible ? (
           <>
-            {/* Sélection de Variantes ou Formats */}
-            {(aDesVariantes || enrichi.formats.length > 1) && (
+            {/* Sélection de Variantes ou Formats (si plusieurs choix disponibles) */}
+            {aPlusieursFormats && (
               <div>
                 <p className="mb-2 text-xs font-bold uppercase text-muted-foreground">
                   {aDesVariantes ? "Choisissez votre formule" : "Format"}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(aDesVariantes ? enrichi.variantes.map((v) => v.nom) : enrichi.formats).map((f) => {
+                  {formatsDispos.map((f) => {
                     const actif = varianteChoisie === f;
                     const vObj = aDesVariantes ? enrichi.variantes.find((v) => v.nom === f) : null;
                     return (
@@ -224,54 +235,66 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
               </div>
             )}
 
-            {/* Montant rapide ou saisie libre */}
-            {!aDesVariantes && (
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase text-muted-foreground">Montant (FCFA)</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {MONTANTS_RAPIDES.map((m) => {
-                    const actif = !saisie && montant === m;
-                    return (
-                      <Button
-                        key={m}
-                        type="button"
-                        size="touch"
-                        variant={actif ? "chipActive" : "chip"}
-                        className="px-1 text-sm"
-                        onClick={() => choisirRapide(m)}
-                        aria-pressed={actif}
-                      >
-                        {m.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ")}
-                      </Button>
-                    );
-                  })}
-                </div>
-                <label className="mt-2 block">
-                  <span className="sr-only">Autre montant en FCFA</span>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      inputMode="numeric"
-                      min={MONTANT_MIN}
-                      step={50}
-                      placeholder="Autre montant (min. 500)"
-                      value={saisie}
-                      onChange={(e) => changerSaisie(e.target.value)}
-                      aria-invalid={!!erreur}
-                      className={cn(
-                        "h-12 rounded-xl pr-16 text-base",
-                        saisie && "border-primary ring-1 ring-primary",
-                        erreur && "border-destructive ring-destructive",
-                      )}
-                    />
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
-                      FCFA
-                    </span>
-                  </div>
-                </label>
-                {erreur && <p className="mt-1 text-sm font-bold text-destructive animate-glisse">{erreur}</p>}
+            {/* Montant rapide ou saisie libre par le client */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold uppercase text-muted-foreground">Montant (FCFA)</p>
+                {montant && montant >= MONTANT_MIN && (
+                  <span className="text-xs font-extrabold text-primary animate-pop-in">
+                    {formatFCFA(montant)}
+                  </span>
+                )}
               </div>
-            )}
+
+              {/* Boutons de montants rapides */}
+              <div className="grid grid-cols-4 gap-2">
+                {MONTANTS_RAPIDES.map((m) => {
+                  const actif = !saisie && montant === m;
+                  return (
+                    <Button
+                      key={m}
+                      type="button"
+                      size="touch"
+                      variant={actif ? "chipActive" : "chip"}
+                      className="px-1 text-sm font-bold"
+                      onClick={() => choisirRapide(m)}
+                      aria-pressed={actif}
+                    >
+                      {m.toLocaleString("fr-FR").replace(/\u202f|\u00a0/g, " ")}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {/* Saisie personnalisée du montant par le client */}
+              <label className="mt-2.5 block">
+                <span className="mb-1 block text-xs font-bold text-muted-foreground">
+                  Ou saisis ton montant personnalisé :
+                </span>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    min={MONTANT_MIN}
+                    max={MONTANT_MAX}
+                    step={50}
+                    placeholder="Ex : 2 500, 3 000, 5 000..."
+                    value={saisie}
+                    onChange={(e) => changerSaisie(e.target.value)}
+                    aria-invalid={!!erreur}
+                    className={cn(
+                      "h-12 rounded-xl pr-16 text-base font-bold transition-all",
+                      saisie && "border-primary ring-2 ring-primary/20 bg-primary/5",
+                      erreur && "border-destructive ring-destructive",
+                    )}
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-extrabold text-primary">
+                    FCFA
+                  </span>
+                </div>
+              </label>
+              {erreur && <p className="mt-1.5 text-sm font-bold text-destructive animate-glisse">{erreur}</p>}
+            </div>
 
             <Button
               type="button"
