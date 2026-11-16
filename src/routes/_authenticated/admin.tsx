@@ -1,20 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Download,
-  LogOut,
-  MessageCircle,
-  Phone,
-  Plus,
-  Search,
-  ShoppingBag,
-  Clock,
-  Wallet,
-  TrendingUp,
-  Loader2,
-  ChevronRight,
-} from "lucide-react";
+import { Icone } from "@/components/Icone";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -94,7 +81,7 @@ function Admin() {
   if (role.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Icone nom="rr:spinner" className="text-3xl animate-spin text-primary" />
       </div>
     );
   }
@@ -105,7 +92,7 @@ function Admin() {
         <h1 className="text-2xl font-bold">Accès réservé</h1>
         <p className="text-muted-foreground">Ce compte n'a pas accès à l'espace vendeur.</p>
         <Button onClick={deconnexion} variant="outline">
-          <LogOut /> Se déconnecter
+          <Icone nom="rr:sign-out-alt" /> Se déconnecter
         </Button>
       </div>
     );
@@ -123,7 +110,7 @@ function Admin() {
             </div>
           </Link>
           <Button variant="ghost" size="sm" onClick={deconnexion}>
-            <LogOut /> Sortir
+            <Icone nom="rr:sign-out-alt" /> Sortir
           </Button>
         </div>
       </header>
@@ -264,10 +251,10 @@ function OngletCommandes() {
   return (
     <div className="space-y-5">
       <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat icone={<ShoppingBag />} label="Commandes du jour" valeur={String(stats.nbJour)} />
-        <Stat icone={<Wallet />} label="Ventes du jour" valeur={formatFCFA(stats.caJour)} />
-        <Stat icone={<Clock />} label="En attente" valeur={String(stats.enAttente)} accent={stats.enAttente > 0} />
-        <Stat icone={<TrendingUp />} label="Ventes du mois" valeur={formatFCFA(stats.caMois)} />
+        <Stat icone={<Icone nom="rr:shopping-bag" />} label="Commandes du jour" valeur={String(stats.nbJour)} />
+        <Stat icone={<Icone nom="rr:wallet" />} label="Ventes du jour" valeur={formatFCFA(stats.caJour)} />
+        <Stat icone={<Icone nom="rr:clock" />} label="En attente" valeur={String(stats.enAttente)} accent={stats.enAttente > 0} />
+        <Stat icone={<Icone nom="rr:chart-line-up" />} label="Ventes du mois" valeur={formatFCFA(stats.caMois)} />
       </section>
 
       {stats.top.length > 0 && (
@@ -292,7 +279,7 @@ function OngletCommandes() {
       <section className="space-y-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Icone nom="rr:search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
@@ -301,7 +288,7 @@ function OngletCommandes() {
             />
           </div>
           <Button variant="outline" className="h-11 rounded-xl" onClick={exporterCSV}>
-            <Download /> CSV
+            <Icone nom="rr:download" /> CSV
           </Button>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -324,7 +311,7 @@ function OngletCommandes() {
 
       {commandes.isLoading ? (
         <div className="flex justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Icone nom="rr:spinner" className="text-3xl animate-spin text-primary" />
         </div>
       ) : affichees.length === 0 ? (
         <p className="rounded-2xl bg-muted p-8 text-center text-muted-foreground">Aucune commande pour le moment.</p>
@@ -379,12 +366,12 @@ function OngletCommandes() {
                 <div className="grid grid-cols-[auto_auto_minmax(0,1fr)] gap-2">
                   <Button asChild variant="outline" size="icon" className="h-11 w-11 rounded-xl">
                     <a href={`tel:${c.client_telephone}`} aria-label="Appeler le client">
-                      <Phone />
+                      <Icone nom="rr:phone-call" />
                     </a>
                   </Button>
                   <Button asChild variant="outline" size="icon" className="h-11 w-11 rounded-xl">
                     <a href={`https://wa.me/${telWa}`} target="_blank" rel="noreferrer" aria-label="WhatsApp du client">
-                      <MessageCircle />
+                      <Icone nom="brands:whatsapp" />
                     </a>
                   </Button>
                   <select
@@ -406,7 +393,7 @@ function OngletCommandes() {
                     size="touch"
                     onClick={() => changerStatut.mutate({ id: c.id, statut: suivant })}
                   >
-                    Passer à « {LIBELLE_STATUT[suivant]} » <ChevronRight />
+                    Passer à « {LIBELLE_STATUT[suivant]} » <Icone nom="rr:angle-small-right" />
                   </Button>
                 )}
               </article>
@@ -420,7 +407,7 @@ function OngletCommandes() {
 
 function Stat({ icone, label, valeur, accent }: { icone: React.ReactNode; label: string; valeur: string; accent?: boolean }) {
   return (
-    <div className={cn("rounded-2xl border p-4 shadow-soft [&_svg]:h-5 [&_svg]:w-5", accent ? "bg-gold/20" : "bg-card")}>
+    <div className={cn("rounded-2xl border p-4 shadow-soft transition-transform animate-fade-up hover:-translate-y-0.5 [&_.icone]:text-2xl", accent ? "bg-gold/20" : "bg-card")}>
       <div className="flex items-center gap-2 text-primary">{icone}</div>
       <p className="mt-2 text-xl font-bold">{valeur}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -506,7 +493,7 @@ function OngletProduits() {
         <Input placeholder="Petite description" value={nouveau.description} maxLength={200} onChange={(e) => setNouveau({ ...nouveau, description: e.target.value })} className="h-11 rounded-xl" />
         <Input placeholder="Formats séparés par virgule (ex : Sachet, Bouteille)" value={nouveau.formats} maxLength={100} onChange={(e) => setNouveau({ ...nouveau, formats: e.target.value })} className="h-11 rounded-xl" />
         <Button type="submit" variant="gold" size="touch" className="w-full" disabled={ajouter.isPending}>
-          <Plus /> Ajouter
+          <Icone nom="rr:plus" /> Ajouter
         </Button>
       </form>
     </div>
@@ -621,7 +608,7 @@ function OngletZones() {
         <Input placeholder="Nom (ex : Abobo Gare)" value={nouvelle.nom} maxLength={60} onChange={(e) => setNouvelle({ ...nouvelle, nom: e.target.value })} className="h-11 rounded-xl" />
         <Input type="number" inputMode="numeric" placeholder="Frais (FCFA)" value={nouvelle.frais} onChange={(e) => setNouvelle({ ...nouvelle, frais: e.target.value })} className="h-11 rounded-xl" />
         <Button type="submit" variant="gold" size="touch" className="w-full" disabled={ajouter.isPending}>
-          <Plus /> Ajouter
+          <Icone nom="rr:plus" /> Ajouter
         </Button>
       </form>
     </div>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, PackageSearch, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,9 @@ import { lireHistorique, type CommandeLocale } from "@/lib/historique";
 import { usePanier } from "@/lib/panier";
 import { CLASSE_STATUT, LIBELLE_STATUT, MESSAGE_STATUT, type Statut } from "@/lib/statuts";
 import { cn } from "@/lib/utils";
+import { Icone } from "@/components/Icone";
+import { TexteAnime } from "@/components/TexteAnime";
+import { Apparait } from "@/components/Apparait";
 
 export const Route = createFileRoute("/suivi")({
   head: () => ({
@@ -93,22 +95,25 @@ function Suivi() {
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
           <Button asChild variant="ghost" size="icon" className="h-11 w-11 rounded-xl">
             <Link to="/" aria-label="Retour au menu">
-              <ArrowLeft className="!size-5" />
+              <Icone nom="rr:arrow-small-left" className="text-2xl" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold">Ma commande</h1>
+          <TexteAnime as="h1" auto texte="Ma commande" className="text-3xl font-extrabold" />
         </div>
       </header>
 
       <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
         <form
-          className="space-y-3 rounded-3xl border bg-card p-4 shadow-soft"
+          className="space-y-3 rounded-3xl border bg-card p-4 shadow-soft animate-fade-up"
           onSubmit={(e) => {
             e.preventDefault();
             chercher();
           }}
         >
-          <h2 className="text-xl font-semibold">Où en est ma commande ?</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
+            <Icone nom="rr:box-open" className="text-primary animate-balance" />
+            <TexteAnime auto delaiMs={200} texte="Où en est ma commande ?" />
+          </h2>
           <Input
             value={numero}
             onChange={(e) => setNumero(e.target.value.toUpperCase())}
@@ -126,16 +131,16 @@ function Suivi() {
             className="h-12 rounded-xl text-base"
           />
           <Button type="submit" variant="default" size="xl" className="w-full" disabled={charge}>
-            {charge ? <Loader2 className="!size-5 animate-spin" /> : <PackageSearch className="!size-5" />}
+            {charge ? <Icone nom="rr:spinner" className="animate-spin" /> : <Icone nom="rr:search" />}
             Vérifier
           </Button>
         </form>
 
         {res && (
-          <section className="space-y-4 rounded-3xl border bg-card p-5 shadow-soft animate-pop-in">
+          <section key={res.numero + res.statut} className="space-y-4 rounded-3xl border bg-card p-5 shadow-soft animate-fade-up">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xl font-bold">{res.numero}</p>
-              <span className={cn("rounded-full px-3 py-1 text-sm font-semibold", CLASSE_STATUT[res.statut])}>
+              <span className={cn("rounded-full px-3 py-1 text-sm font-bold animate-tampon", CLASSE_STATUT[res.statut])}>
                 {LIBELLE_STATUT[res.statut]}
               </span>
             </div>
@@ -144,7 +149,14 @@ function Suivi() {
               <ol className="grid grid-cols-4 gap-1">
                 {ETAPES.map((e, i) => (
                   <li key={e} className="space-y-1 text-center text-xs">
-                    <div className={cn("h-2 rounded-full", i <= etapeActuelle ? "bg-primary" : "bg-muted")} />
+                    <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      {i <= etapeActuelle && (
+                        <div
+                          className="h-full rounded-full bg-primary animate-remplit"
+                          style={{ ["--duree" as string]: "500ms", animationDelay: `${300 + i * 450}ms` }}
+                        />
+                      )}
+                    </div>
                     <span className={i <= etapeActuelle ? "font-semibold" : "text-muted-foreground"}>
                       {LIBELLE_STATUT[e]}
                     </span>
@@ -172,9 +184,14 @@ function Suivi() {
 
         {historique.length > 0 && (
           <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Mes dernières commandes</h2>
-            {historique.map((c) => (
-              <div key={c.numero} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
+            <TexteAnime as="h2" texte="Mes dernières commandes" className="text-2xl font-bold" />
+            {historique.map((c, i) => (
+              <Apparait
+                key={c.numero}
+                type="left"
+                delaiMs={i * 80}
+                className="flex items-center gap-3 rounded-2xl border bg-card p-3 hover:shadow-soft"
+              >
                 <button
                   type="button"
                   className="min-w-0 flex-1 text-left"
@@ -190,9 +207,9 @@ function Suivi() {
                   </p>
                 </button>
                 <Button type="button" variant="gold" size="sm" onClick={() => recommander(c)}>
-                  <RotateCcw /> Recommander
+                  <Icone nom="rr:rotate-right" /> Recommander
                 </Button>
-              </div>
+              </Apparait>
             ))}
           </section>
         )}

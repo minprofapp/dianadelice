@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { ArrowLeft, Loader2, MessageCircle, Trash2, CheckCircle2, Copy, PackageSearch } from "lucide-react";
 import { ajouterHistorique, lireHistorique } from "@/lib/historique";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Icone } from "@/components/Icone";
+import { TexteAnime } from "@/components/TexteAnime";
+import { Apparait } from "@/components/Apparait";
 
 export const Route = createFileRoute("/panier")({
   head: () => ({
@@ -172,17 +174,20 @@ function Panier() {
         <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-3">
           <Button asChild variant="ghost" size="icon" className="h-11 w-11 rounded-xl">
             <Link to="/" aria-label="Retour au menu">
-              <ArrowLeft className="!size-5" />
+              <Icone nom="rr:arrow-small-left" className="text-2xl" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold">Mon panier</h1>
+          <TexteAnime as="h1" auto texte="Mon panier" className="text-3xl font-extrabold" />
         </div>
       </header>
 
       <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
         {articles.length === 0 ? (
-          <div className="rounded-3xl border bg-card p-8 text-center shadow-soft">
-            <p className="text-lg font-semibold">Ton panier est vide dèh !</p>
+          <div className="rounded-3xl border bg-card p-8 text-center shadow-soft animate-fade-up">
+            <span className="mx-auto mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-secondary animate-flotte">
+              <Icone nom="rr:shopping-bag" className="text-4xl text-primary" />
+            </span>
+            <p className="text-xl font-bold">Ton panier est vide dèh !</p>
             <p className="mt-1 text-muted-foreground">Va choisir tes croquettes et tes jus d'abord.</p>
             <Button asChild variant="gold" size="xl" className="mt-5 w-full">
               <Link to="/">Voir le menu</Link>
@@ -190,14 +195,21 @@ function Panier() {
           </div>
         ) : (
           <form onSubmit={commander} className="space-y-5" noValidate>
-            <section className="divide-y rounded-3xl border bg-card shadow-soft">
-              {articles.map((a) => (
-                <div key={a.cle} className="flex items-center gap-3 p-4">
-                  <div className="flex-1">
-                    <p className="font-semibold">{a.nom}</p>
+            <section className="divide-y overflow-hidden rounded-3xl border bg-card shadow-soft animate-fade-up">
+              {articles.map((a, i) => (
+                <div
+                  key={a.cle}
+                  className="flex items-center gap-3 p-4 animate-glisse"
+                  style={{ ["--d" as string]: `${i * 70}ms` }}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                    <Icone nom="sr:cookie" className="text-xl text-gold" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold">{a.nom}</p>
                     {a.format && <p className="text-sm text-muted-foreground">{a.format}</p>}
                   </div>
-                  <p className="font-bold">{formatFCFA(a.montant)}</p>
+                  <p className="whitespace-nowrap font-bold">{formatFCFA(a.montant)}</p>
                   <Button
                     type="button"
                     variant="ghost"
@@ -206,14 +218,14 @@ function Panier() {
                     onClick={() => retirer(a.cle)}
                     aria-label={`Retirer ${a.nom}`}
                   >
-                    <Trash2 className="!size-5" />
+                    <Icone nom="rr:trash" className="text-xl transition-colors hover:text-destructive" />
                   </Button>
                 </div>
               ))}
             </section>
 
-            <section className="space-y-4 rounded-3xl border bg-card p-4 shadow-soft">
-              <h2 className="text-xl font-semibold">Tes infos pour la livraison</h2>
+            <Apparait as="section" delaiMs={100} className="space-y-4 rounded-3xl border bg-card p-4 shadow-soft">
+              <TexteAnime as="h2" texte="Tes infos pour la livraison" className="text-2xl font-bold" />
 
               <Champ label="Nom et prénom" erreur={erreurs.nom}>
                 <Input
@@ -282,9 +294,9 @@ function Panier() {
                   placeholder="Ex : bien glacé, peu sucré, appelle avant"
                 />
               </Champ>
-            </section>
+            </Apparait>
 
-            <section className="space-y-2 rounded-3xl border bg-secondary p-4">
+            <Apparait as="section" type="zoom" className="space-y-2 rounded-3xl border bg-secondary p-4">
               <Ligne label="Sous-total" valeur={formatFCFA(sousTotal)} />
               <Ligne
                 label="Livraison"
@@ -292,15 +304,15 @@ function Panier() {
               />
               <div className="flex items-baseline justify-between border-t border-border pt-2">
                 <span className="text-lg font-semibold">Total à payer</span>
-                <span className="text-2xl font-bold text-primary">{formatFCFA(total)}</span>
+                <span key={total} className="text-3xl font-extrabold text-primary animate-pop-in">{formatFCFA(total)}</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Tu paies à la livraison : espèces ou Mobile Money.
               </p>
-            </section>
+            </Apparait>
 
-            <Button type="submit" variant="whatsapp" size="xl" className="w-full" disabled={envoi}>
-              {envoi ? <Loader2 className="!size-5 animate-spin" /> : <MessageCircle className="!size-5" />}
+            <Button type="submit" variant="whatsapp" size="xl" className="brillance w-full" disabled={envoi}>
+              {envoi ? <Icone nom="rr:spinner" className="animate-spin" /> : <Icone nom="brands:whatsapp" className="text-2xl" />}
               Commander sur WhatsApp
             </Button>
           </form>
@@ -313,9 +325,9 @@ function Panier() {
 function Champ({ label, erreur, children }: { label: string; erreur?: string | undefined; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-sm font-bold">{label}</span>
       {children}
-      {erreur && <span className="block text-sm font-medium text-destructive">{erreur}</span>}
+      {erreur && <span className="block text-sm font-bold text-destructive animate-glisse">{erreur}</span>}
     </label>
   );
 }
@@ -344,6 +356,17 @@ type Recu = {
   total: number;
 };
 
+const ECLATS = [
+  { x: "-56px", y: "-40px", c: "bg-gold" },
+  { x: "52px", y: "-46px", c: "bg-primary" },
+  { x: "-62px", y: "20px", c: "bg-leaf" },
+  { x: "60px", y: "26px", c: "bg-gold" },
+  { x: "-20px", y: "-64px", c: "bg-whatsapp" },
+  { x: "24px", y: "60px", c: "bg-primary" },
+  { x: "-34px", y: "56px", c: "bg-gold" },
+  { x: "36px", y: "-62px", c: "bg-leaf" },
+];
+
 function EcranRecu({ recu }: { recu: Recu }) {
   async function copier() {
     try {
@@ -356,17 +379,27 @@ function EcranRecu({ recu }: { recu: Recu }) {
   return (
     <div className="mx-auto min-h-screen max-w-lg px-4 py-8">
       <div className="text-center">
-        <CheckCircle2 className="mx-auto h-16 w-16 text-success" />
-        <h1 className="mt-3 text-3xl font-bold">C'est enregistré !</h1>
-        <p className="mt-1 text-muted-foreground">
+        <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+          <span className="absolute inset-0 rounded-full bg-success/25 animate-ping" />
+          {ECLATS.map((e, i) => (
+            <span
+              key={i}
+              className={cn("absolute h-2.5 w-2.5 rounded-sm animate-eclat", e.c)}
+              style={{ ["--x" as string]: e.x, ["--y" as string]: e.y, ["--d" as string]: "250ms" }}
+            />
+          ))}
+          <Icone nom="sr:check-circle" className="relative text-7xl text-success animate-tampon" />
+        </div>
+        <TexteAnime as="h1" auto delaiMs={300} texte="C'est enregistré !" className="mt-3 text-4xl font-extrabold" />
+        <p className="mt-1 text-muted-foreground animate-fade-up" style={{ ["--d" as string]: "600ms" }}>
           Envoie le message sur WhatsApp pour confirmer. Tu paies à la livraison.
         </p>
       </div>
 
-      <section className="mt-6 overflow-hidden rounded-3xl border bg-card shadow-soft animate-pop-in">
+      <section className="mt-6 overflow-hidden rounded-3xl border bg-card shadow-soft animate-deroule" style={{ ["--d" as string]: "500ms" }}>
         <div className="bg-hero px-5 py-4 text-primary-foreground">
           <p className="text-sm opacity-80">Reçu de commande</p>
-          <p className="text-2xl font-bold">{recu.numero}</p>
+          <p className="text-3xl font-extrabold">{recu.numero}</p>
         </div>
         <div className="space-y-4 p-5 text-sm">
           <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
@@ -400,23 +433,23 @@ function EcranRecu({ recu }: { recu: Recu }) {
           <Ligne label="Livraison" valeur={formatFCFA(recu.frais)} />
           <div className="flex items-baseline justify-between">
             <span className="text-base font-semibold">Total à payer</span>
-            <span className="text-2xl font-bold text-primary">{formatFCFA(recu.total)}</span>
+            <span className="text-3xl font-extrabold text-primary">{formatFCFA(recu.total)}</span>
           </div>
         </div>
       </section>
 
-      <Button asChild variant="whatsapp" size="xl" className="mt-6 w-full">
+      <Button asChild variant="whatsapp" size="xl" className="brillance mt-6 w-full animate-fade-up" style={{ ["--d" as string]: "900ms" }}>
         <a href={recu.lien}>
-          <MessageCircle className="!size-5" /> Envoyer sur WhatsApp
+          <Icone nom="brands:whatsapp" className="text-2xl" /> Envoyer sur WhatsApp
         </a>
       </Button>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-2 gap-3 animate-fade-up" style={{ ["--d" as string]: "1050ms" }}>
         <Button type="button" variant="outline" size="touch" onClick={copier}>
-          <Copy /> Copier le reçu
+          <Icone nom="rr:copy-alt" /> Copier le reçu
         </Button>
         <Button asChild variant="outline" size="touch">
           <Link to="/suivi">
-            <PackageSearch /> Suivre
+            <Icone nom="rr:box-open" /> Suivre
           </Link>
         </Button>
       </div>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Check, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { MONTANTS_RAPIDES, MONTANT_MIN, formatFCFA, verifierMontant } from "@/li
 import { usePanier } from "@/lib/panier";
 import { imageProduit } from "@/lib/catalogue";
 import { cn } from "@/lib/utils";
+import { Icone } from "@/components/Icone";
 
 type Produit = {
   id: string;
@@ -55,11 +55,11 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
   return (
     <article
       className={cn(
-        "overflow-hidden rounded-3xl border bg-card shadow-soft",
+        "group overflow-hidden rounded-3xl border bg-card shadow-soft transition-shadow duration-300 hover:shadow-float",
         !produit.disponible && "opacity-70",
       )}
     >
-      <div className="relative aspect-[4/3] bg-muted">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {img && (
           <img
             src={img}
@@ -68,8 +68,18 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
             height={480}
             loading={prioritaire ? "eager" : "lazy"}
             decoding="async"
-            className={cn("h-full w-full object-cover", !produit.disponible && "grayscale")}
+            className={cn(
+              "img-reveal h-full w-full object-cover transition-[scale] duration-700 ease-out group-hover:scale-105",
+              !produit.disponible && "grayscale",
+            )}
           />
+        )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-foreground/40 to-transparent" />
+        {produit.disponible && (
+          <span className="absolute right-3 top-3 flex h-16 w-16 rotate-12 flex-col items-center justify-center rounded-full bg-gold-gradient text-center font-display leading-none text-gold-foreground shadow-float animate-balance">
+            <span className="text-xs font-bold">dès</span>
+            <span className="text-lg font-extrabold">500F</span>
+          </span>
         )}
         {!produit.disponible && (
           <span className="absolute left-3 top-3 rounded-full bg-foreground px-3 py-1 text-sm font-bold text-background">
@@ -80,7 +90,7 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
 
       <div className="space-y-4 p-4">
         <div>
-          <h2 className="text-2xl font-semibold">{produit.nom}</h2>
+          <h2 className="text-3xl font-bold">{produit.nom}</h2>
           {produit.description && <p className="text-muted-foreground">{produit.description}</p>}
         </div>
 
@@ -88,7 +98,7 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
           <>
             {produit.formats.length > 1 && (
               <div>
-                <p className="mb-2 text-sm font-semibold text-muted-foreground">Sachet ou bouteille ?</p>
+                <p className="mb-2 text-sm font-bold text-muted-foreground">Sachet ou bouteille ?</p>
                 <div className="grid grid-cols-2 gap-2">
                   {produit.formats.map((f) => (
                     <Button
@@ -107,7 +117,7 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
             )}
 
             <div>
-              <p className="mb-2 text-sm font-semibold text-muted-foreground">Ton montant (FCFA)</p>
+              <p className="mb-2 text-sm font-bold text-muted-foreground">Ton montant (FCFA)</p>
               <div className="grid grid-cols-4 gap-2">
                 {MONTANTS_RAPIDES.map((m) => {
                   const actif = !saisie && montant === m;
@@ -149,12 +159,20 @@ export function CarteProduit({ produit, prioritaire }: { produit: Produit; prior
                   </span>
                 </div>
               </label>
-              {erreur && <p className="mt-1 text-sm font-medium text-destructive">{erreur}</p>}
+              {erreur && <p className="mt-1 text-sm font-bold text-destructive animate-glisse">{erreur}</p>}
             </div>
 
-            <Button type="button" variant="gold" size="xl" className="w-full" onClick={ajouterAuPanier}>
-              {ajoute ? <Check className="!size-5" /> : <Plus className="!size-5" />}
-              {ajoute ? "C'est ajouté !" : `Ajouter${montant && montant >= MONTANT_MIN ? ` · ${formatFCFA(montant)}` : ""}`}
+            <Button
+              type="button"
+              variant={ajoute ? "whatsapp" : "gold"}
+              size="xl"
+              className={cn("w-full", !ajoute && "brillance")}
+              onClick={ajouterAuPanier}
+            >
+              <span key={ajoute ? "ok" : "plus"} className="inline-flex items-center gap-2 animate-pop-in">
+                {ajoute ? <Icone nom="rr:check" className="animate-tampon" /> : <Icone nom="rr:plus" />}
+                {ajoute ? "C'est ajouté !" : `Ajouter${montant && montant >= MONTANT_MIN ? ` · ${formatFCFA(montant)}` : ""}`}
+              </span>
             </Button>
           </>
         ) : (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, LogIn } from "lucide-react";
+import { Icone } from "@/components/Icone";
+import { TexteAnime } from "@/components/TexteAnime";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -42,13 +43,13 @@ function Connexion() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-5 py-10">
-      <Link to="/" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground">
-        <ArrowLeft className="h-4 w-4" /> Retour au menu
+      <Link to="/" className="group mb-6 inline-flex items-center gap-1 text-sm font-bold text-muted-foreground animate-fade-in">
+        <Icone nom="rr:arrow-small-left" className="transition-transform group-hover:-translate-x-1" /> Retour au menu
       </Link>
-      <img src={logo.url} alt="Diana Croquettes" width={96} height={96} className="mx-auto h-24 w-24" />
-      <h1 className="mt-4 text-center text-3xl font-bold">Espace vendeur</h1>
-      <p className="mt-1 text-center text-muted-foreground">Connecte-toi pour gérer les commandes.</p>
-      <form onSubmit={seConnecter} className="mt-6 space-y-3">
+      <img src={logo.url} alt="Diana Croquettes" width={96} height={96} className="mx-auto h-24 w-24 rounded-full bg-card p-1 shadow-float animate-tampon" />
+      <TexteAnime as="h1" auto delaiMs={200} texte="Espace vendeur" className="mt-4 block text-center text-4xl font-extrabold" />
+      <p className="mt-1 text-center text-muted-foreground animate-fade-up" style={{ ["--d" as string]: "400ms" }}>Connecte-toi pour gérer les commandes.</p>
+      <form onSubmit={seConnecter} className="mt-6 space-y-3 animate-fade-up" style={{ ["--d" as string]: "550ms" }}>
         <Input
           type="email"
           autoComplete="email"
@@ -68,7 +69,7 @@ function Connexion() {
           className="h-12 rounded-xl text-base"
         />
         <Button type="submit" size="xl" className="w-full" disabled={charge}>
-          {charge ? <Loader2 className="!size-5 animate-spin" /> : <LogIn className="!size-5" />}
+          {charge ? <Icone nom="rr:spinner" className="animate-spin" /> : <Icone nom="rr:sign-in-alt" />}
           Se connecter
         </Button>
       </form>

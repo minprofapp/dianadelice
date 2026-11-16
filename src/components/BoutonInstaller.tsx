@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Icone } from "@/components/Icone";
 import { Button } from "@/components/ui/button";
 
 type BeforeInstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<unknown> };
@@ -23,13 +23,13 @@ export function BoutonInstaller() {
       type="button"
       variant="gold"
       size="sm"
-      className="rounded-full"
+      className="brillance rounded-full animate-pop-in"
       onClick={async () => {
         await evt.prompt();
         setEvt(null);
       }}
     >
-      <Download /> Installer l'appli
+      <Icone nom="rr:download" /> Installer l'appli
     </Button>
   );
 }

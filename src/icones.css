@@ -1,0 +1,50 @@
+/* Généré par scripts/icones.py — icônes Flaticon UIcons (https://www.flaticon.com/uicons) */
+@layer base{
+.icone{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;font-size:1.25em;font-style:normal}
+.icone::before{display:block;line-height:1;font-weight:400;-webkit-font-smoothing:antialiased}
+@font-face{font-family:"uicons-diana-rr";src:url("./assets/fonts/uicons-rr.woff2") format("woff2");font-display:block}
+.icone[class*=" fi-rr-"]::before{font-family:"uicons-diana-rr"}
+.fi-rr-shopping-bag::before{content:"\fbf7"}
+.fi-rr-angle-small-right::before{content:"\f155"}
+.fi-rr-arrow-small-left::before{content:"\f19d"}
+.fi-rr-spinner::before{content:"\fc8f"}
+.fi-rr-box-open::before{content:"\f2b3"}
+.fi-rr-marker::before{content:"\f8fd"}
+.fi-rr-shop::before{content:"\fbf5"}
+.fi-rr-leaf::before{content:"\f88c"}
+.fi-rr-hand-holding-usd::before{content:"\f75f"}
+.fi-rr-moped::before{content:"\f973"}
+.fi-rr-download::before{content:"\f591"}
+.fi-rr-sign-out-alt::before{content:"\fc0c"}
+.fi-rr-phone-call::before{content:"\fa61"}
+.fi-rr-plus::before{content:"\faac"}
+.fi-rr-search::before{content:"\fbba"}
+.fi-rr-clock::before{content:"\f45a"}
+.fi-rr-wallet::before{content:"\fedc"}
+.fi-rr-chart-line-up::before{content:"\f3a5"}
+.fi-rr-trash::before{content:"\fe17"}
+.fi-rr-check-circle::before{content:"\f3c4"}
+.fi-rr-copy-alt::before{content:"\f4db"}
+.fi-rr-rotate-right::before{content:"\fb6a"}
+.fi-rr-sign-in-alt::before{content:"\fc0b"}
+.fi-rr-check::before{content:"\f3c8"}
+.fi-rr-cookie::before{content:"\f4da"}
+.fi-rr-star::before{content:"\fce9"}
+.fi-rr-heart::before{content:"\f7a0"}
+.fi-rr-time-fast::before{content:"\fda4"}
+.fi-rr-angle-small-down::before{content:"\f153"}
+.fi-rr-user::before{content:"\fea0"}
+.fi-rr-smartphone::before{content:"\fc44"}
+.fi-rr-comment-alt::before{content:"\f4a1"}
+@font-face{font-family:"uicons-diana-sr";src:url("./assets/fonts/uicons-sr.woff2") format("woff2");font-display:block}
+.icone[class*=" fi-sr-"]::before{font-family:"uicons-diana-sr"}
+.fi-sr-check-circle::before{content:"\f3bc"}
+.fi-sr-star::before{content:"\fcc1"}
+.fi-sr-shopping-bag::before{content:"\fbd1"}
+.fi-sr-cookie::before{content:"\f4d2"}
+.fi-sr-heart::before{content:"\f794"}
+.fi-sr-flame::before{content:"\f689"}
+@font-face{font-family:"uicons-diana-brands";src:url("./assets/fonts/uicons-brands.woff2") format("woff2");font-display:block}
+.icone[class*=" fi-brands-"]::before{font-family:"uicons-diana-brands"}
+.fi-brands-whatsapp::before{content:"\f1d2"}
+}

@@ -1,12 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Bike, Banknote, MapPin, Store, PackageSearch, MessageCircle, Leaf } from "lucide-react";
 import { produitsQuery, zonesQuery } from "@/lib/catalogue";
 import { CarteProduit } from "@/components/CarteProduit";
 import { BarrePanier } from "@/components/BarrePanier";
 import { CarrouselHero } from "@/components/CarrouselHero";
 import { MachineAEcrire } from "@/components/MachineAEcrire";
 import { BoutonInstaller } from "@/components/BoutonInstaller";
+import { BandeDefilante } from "@/components/BandeDefilante";
+import { TexteAnime } from "@/components/TexteAnime";
+import { Icone } from "@/components/Icone";
+import type { NomIcone } from "@/components/icones-noms";
+import { Apparait } from "@/components/Apparait";
 import { NOM_BOUTIQUE, WHATSAPP_AFFICHAGE, WHATSAPP_VENDEUR, formatFCFA } from "@/lib/commande";
 import logo from "@/assets/diana-logo.png.asset.json";
 
@@ -42,14 +46,21 @@ function Accueil() {
   const { data: zones } = useSuspenseQuery(zonesQuery);
   const fraisMin = zones.filter((z) => z.frais > 0).map((z) => z.frais).sort((a, b) => a - b)[0];
 
+  const atouts: { icone: NomIcone; couleur: string; texte: string }[] = [
+    { icone: "rr:hand-holding-usd", couleur: "text-primary", texte: "Tu paies à la livraison" },
+    { icone: "rr:moped", couleur: "text-primary", texte: `Livraison ${fraisMin ? `dès ${formatFCFA(fraisMin)}` : "offerte"}` },
+    { icone: "rr:leaf", couleur: "text-leaf", texte: "Fait maison, frais du jour" },
+    { icone: "brands:whatsapp", couleur: "text-whatsapp", texte: "Reçu direct sur WhatsApp" },
+  ];
+
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen overflow-x-hidden pb-32">
       <header className="relative overflow-hidden text-primary-foreground">
         <CarrouselHero />
-        <div className="relative mx-auto flex min-h-[460px] max-w-lg flex-col px-5 pb-12 pt-5">
-          <div className="flex items-center justify-between gap-3">
-            <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-deep/70 px-3 py-1 text-sm font-semibold backdrop-blur">
-              <MapPin className="h-4 w-4" /> Anyama · CAFOP Abobo
+        <div className="relative mx-auto flex min-h-[500px] max-w-lg flex-col px-5 pb-14 pt-5">
+          <div className="flex items-center justify-between gap-3 animate-fade-in">
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-primary-deep/70 px-3 py-1 text-sm font-bold backdrop-blur">
+              <Icone nom="rr:marker" /> Anyama · CAFOP Abobo
             </p>
             <BoutonInstaller />
           </div>
@@ -60,82 +71,102 @@ function Accueil() {
               alt={NOM_BOUTIQUE}
               width={112}
               height={112}
-              className="h-28 w-28 rounded-full bg-card p-1 shadow-float"
+              className="h-28 w-28 rounded-full bg-card p-1 shadow-float animate-tampon"
             />
-            <h1 className="mt-3 text-4xl font-bold leading-tight">{NOM_BOUTIQUE}</h1>
-            <div className="mt-2 min-h-[3.5rem]">
-              <MachineAEcrire className="text-lg font-medium" />
+            <TexteAnime
+              as="h1"
+              auto
+              delaiMs={250}
+              texte={NOM_BOUTIQUE}
+              className="mt-3 text-5xl font-extrabold leading-none drop-shadow-sm"
+            />
+            <div className="mt-2 min-h-[3.5rem] animate-fade-up" style={{ ["--d" as string]: "500ms" }}>
+              <MachineAEcrire className="text-lg font-semibold" />
               <span className="sr-only">Croquettes et jus frais faits maison, livrés près de chez vous.</span>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="rounded-2xl bg-gold-gradient px-4 py-2 text-lg font-bold text-gold-foreground shadow-soft">
+            <div className="mt-3 flex flex-wrap items-center gap-2 animate-fade-up" style={{ ["--d" as string]: "700ms" }}>
+              <span className="brillance rounded-2xl bg-gold-gradient px-4 py-2 text-lg font-extrabold text-gold-foreground shadow-soft">
                 Dès {formatFCFA(500)}
               </span>
               <a
                 href="#menu"
-                className="rounded-2xl border-2 border-primary-foreground/70 px-4 py-2 font-semibold backdrop-blur"
+                className="group inline-flex items-center gap-1.5 rounded-2xl border-2 border-primary-foreground/70 px-4 py-2 font-bold backdrop-blur transition-all hover:bg-primary-foreground hover:text-primary"
               >
-                Voir le menu ↓
+                Voir le menu
+                <Icone nom="rr:angle-small-down" className="transition-transform group-hover:translate-y-0.5 animate-bounce" />
               </a>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto -mt-6 max-w-lg space-y-5 px-4">
-        <section className="relative grid grid-cols-2 gap-3 rounded-2xl border bg-card p-3 text-sm shadow-soft">
-          <div className="flex items-center gap-2">
-            <Banknote className="h-5 w-5 shrink-0 text-primary" />
-            <span>Tu paies à la livraison</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Bike className="h-5 w-5 shrink-0 text-primary" />
-            <span>Livraison {fraisMin ? `dès ${formatFCFA(fraisMin)}` : "offerte"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Leaf className="h-5 w-5 shrink-0 text-leaf" />
-            <span>Fait maison, frais du jour</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 shrink-0 text-whatsapp" />
-            <span>Reçu direct sur WhatsApp</span>
-          </div>
-        </section>
+      <BandeDefilante />
+
+      <main className="mx-auto max-w-lg space-y-5 px-4 pt-3">
+        <Apparait as="section" className="relative grid grid-cols-2 gap-3 rounded-3xl border bg-card p-4 text-sm shadow-soft">
+          {atouts.map((a, i) => (
+            <Apparait key={a.texte} type="zoom" delaiMs={120 + i * 90} className="flex items-center gap-2.5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                <Icone nom={a.icone} className={`text-xl ${a.couleur}`} />
+              </span>
+              <span className="font-semibold leading-snug">{a.texte}</span>
+            </Apparait>
+          ))}
+        </Apparait>
 
         <div className="grid grid-cols-2 gap-3">
+          <Apparait type="left" delaiMs={80}>
           <Link
             to="/suivi"
-            className="flex items-center gap-2 rounded-2xl border bg-secondary px-4 py-3 font-semibold text-secondary-foreground"
+            className="group flex h-full items-center gap-2 rounded-2xl border bg-secondary px-4 py-3 font-bold text-secondary-foreground transition-all hover:-translate-y-0.5 hover:shadow-soft"
           >
-            <PackageSearch className="h-5 w-5 text-primary" /> Suivre ma commande
+            <Icone nom="rr:box-open" className="text-xl text-primary transition-transform group-hover:-rotate-12" /> Suivre ma commande
           </Link>
+          </Apparait>
+          <Apparait type="right" delaiMs={160}>
           <a
             href={`https://wa.me/${WHATSAPP_VENDEUR}`}
-            className="flex items-center gap-2 rounded-2xl border bg-secondary px-4 py-3 font-semibold text-secondary-foreground"
+            className="group flex h-full items-center gap-2 rounded-2xl border bg-secondary px-4 py-3 font-bold text-secondary-foreground transition-all hover:-translate-y-0.5 hover:shadow-soft"
           >
-            <MessageCircle className="h-5 w-5 text-whatsapp" /> Écrire à Diana
+            <Icone nom="brands:whatsapp" className="text-xl text-whatsapp transition-transform group-hover:scale-125" /> Écrire à Diana
           </a>
+          </Apparait>
         </div>
 
-        <h2 id="menu" className="scroll-mt-4 pt-2 text-3xl font-bold">
-          Le menu du jour
-        </h2>
-        <p className="-mt-3 text-muted-foreground">Choisis ton montant, à partir de 500F par article.</p>
+        <div className="pt-3">
+          <TexteAnime as="h2" id="menu" texte="Le menu du jour" className="scroll-mt-4 text-4xl font-extrabold" />
+          <Apparait as="p" type="blur" delaiMs={250} className="mt-1 text-muted-foreground">
+            Choisis ton montant, à partir de 500F par article.
+          </Apparait>
+        </div>
 
         {produits.length === 0 ? (
-          <p className="rounded-2xl bg-muted p-6 text-center text-muted-foreground">Le menu arrive bientôt, patiente un peu.</p>
+          <Apparait as="p" className="rounded-2xl bg-muted p-6 text-center text-muted-foreground">
+            Le menu arrive bientôt, patiente un peu.
+          </Apparait>
         ) : (
-          produits.map((p) => <CarteProduit key={p.id} produit={p} />)
+          produits.map((p, i) => (
+            <Apparait key={p.id} type={i % 2 ? "right" : "left"} delaiMs={60}>
+              <CarteProduit produit={p} prioritaire={i === 0} />
+            </Apparait>
+          ))
         )}
 
-        <footer className="space-y-2 pt-6 text-center text-sm text-muted-foreground">
+        <Apparait as="footer" className="space-y-2 pt-6 text-center text-sm text-muted-foreground">
+          <img src={logo.url} alt="" width={56} height={56} className="mx-auto h-14 w-14 animate-flotte" />
           <p>
             {NOM_BOUTIQUE} · WhatsApp {WHATSAPP_AFFICHAGE}
           </p>
           <Link to="/admin" className="inline-flex items-center gap-1.5 underline-offset-4 hover:underline">
-            <Store className="h-4 w-4" /> Espace vendeur
+            <Icone nom="rr:shop" /> Espace vendeur
           </Link>
-        </footer>
+          <p className="text-xs">
+            Icônes{" "}
+            <a href="https://www.flaticon.com/uicons" target="_blank" rel="noreferrer" className="underline">
+              UIcons par Flaticon
+            </a>
+          </p>
+        </Apparait>
       </main>
 
       <BarrePanier />
