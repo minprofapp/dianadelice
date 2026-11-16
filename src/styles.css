@@ -1,0 +1,360 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "./icones.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-deep: var(--primary-deep);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-leaf: var(--leaf);
+  --color-leaf-foreground: var(--leaf-foreground);
+  --color-whatsapp: var(--whatsapp);
+  --color-whatsapp-foreground: var(--whatsapp-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-soft: var(--shadow-soft-value);
+  --shadow-float: var(--shadow-float-value);
+}
+
+:root {
+  --radius: 1rem;
+  /* Fond crème chaud, texte brun profond */
+  --background: oklch(0.975 0.016 82);
+  --foreground: oklch(0.24 0.045 30);
+  --card: oklch(0.993 0.007 85);
+  --card-foreground: oklch(0.24 0.045 30);
+  --popover: oklch(0.993 0.007 85);
+  --popover-foreground: oklch(0.24 0.045 30);
+  /* Rouge bissap */
+  --primary: oklch(0.44 0.165 14);
+  --primary-deep: oklch(0.32 0.12 12);
+  --primary-foreground: oklch(0.985 0.01 85);
+  /* Sable chaud */
+  --secondary: oklch(0.935 0.035 78);
+  --secondary-foreground: oklch(0.3 0.06 35);
+  --muted: oklch(0.945 0.022 80);
+  --muted-foreground: oklch(0.5 0.04 40);
+  --accent: oklch(0.92 0.06 80);
+  --accent-foreground: oklch(0.3 0.07 40);
+  /* Doré croquette / gingembre */
+  --gold: oklch(0.79 0.145 72);
+  --gold-foreground: oklch(0.27 0.06 45);
+  /* Vert feuille du logo Diana */
+  --leaf: oklch(0.48 0.13 145);
+  --leaf-foreground: oklch(0.985 0.01 85);
+  --whatsapp: oklch(0.62 0.16 150);
+  --whatsapp-foreground: oklch(0.99 0.01 150);
+  --success: oklch(0.58 0.13 150);
+  --success-foreground: oklch(0.99 0.01 150);
+  --destructive: oklch(0.56 0.22 27);
+  --destructive-foreground: oklch(0.985 0.01 85);
+  --border: oklch(0.89 0.03 75);
+  --input: oklch(0.86 0.035 75);
+  --ring: oklch(0.44 0.165 14);
+  --chart-1: oklch(0.44 0.165 14);
+  --chart-2: oklch(0.79 0.145 72);
+  --chart-3: oklch(0.62 0.16 150);
+  --chart-4: oklch(0.6 0.1 40);
+  --chart-5: oklch(0.7 0.08 90);
+  --sidebar: oklch(0.96 0.02 80);
+  --sidebar-foreground: oklch(0.24 0.045 30);
+  --sidebar-primary: oklch(0.44 0.165 14);
+  --sidebar-primary-foreground: oklch(0.985 0.01 85);
+  --sidebar-accent: oklch(0.92 0.06 80);
+  --sidebar-accent-foreground: oklch(0.3 0.07 40);
+  --sidebar-border: oklch(0.89 0.03 75);
+  --sidebar-ring: oklch(0.44 0.165 14);
+
+  --gradient-hero: linear-gradient(160deg, var(--primary) 0%, var(--primary-deep) 100%);
+  --gradient-gold: linear-gradient(135deg, oklch(0.84 0.13 80), var(--gold));
+  --shadow-soft-value: 0 6px 20px -10px color-mix(in oklab, var(--primary-deep) 30%, transparent);
+  --shadow-float-value: 0 14px 34px -12px color-mix(in oklab, var(--primary-deep) 55%, transparent);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    /* Texte de base à 18px (respecte le réglage de taille du téléphone) */
+    font-size: 112.5%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    line-height: 1.55;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.005em;
+    line-height: 1.15;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--gold) 55%, transparent);
+  }
+  /* Retire les flèches des champs numériques */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@utility bg-hero {
+  background-image: var(--gradient-hero);
+}
+@utility bg-gold-gradient {
+  background-image: var(--gradient-gold);
+}
+@utility pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.96); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes bump {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+}
+@utility animate-pop-in {
+  animation: pop-in 0.25s ease-out both;
+}
+@utility animate-bump {
+  animation: bump 0.35s ease-out;
+}
+
+@keyframes caret {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes ken-burns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+@utility animate-caret {
+  animation: caret 0.9s steps(1) infinite;
+}
+@utility animate-ken-burns {
+  animation: ken-burns 6s ease-out forwards;
+}
+@utility bg-hero-overlay {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--primary-deep) 35%, transparent) 0%,
+    color-mix(in oklab, var(--primary-deep) 55%, transparent) 45%,
+    color-mix(in oklab, var(--primary-deep) 92%, transparent) 100%
+  );
+}
+
+/* ---------- Animations ---------- */
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes mot-in {
+  0% { opacity: 0; transform: translateY(0.6em) rotate(4deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes flotte {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+}
+@keyframes brille {
+  0% { transform: translateX(-120%) skewX(-20deg); }
+  60%, 100% { transform: translateX(260%) skewX(-20deg); }
+}
+@keyframes defile {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes remplit {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@keyframes tampon {
+  0% { transform: scale(0.3) rotate(-25deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes balance {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+@keyframes glisse-g {
+  0% { opacity: 0; transform: translateX(-24px); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes deroule {
+  0% { clip-path: inset(0 0 100% 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes eclat {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--x), var(--y)) scale(0.4) rotate(220deg); opacity: 0; }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+@utility animate-fade-in {
+  animation: fade-in 0.6s ease-out both;
+  animation-delay: var(--d, 0ms);
+}
+@utility animate-flotte {
+  animation: flotte 4.5s ease-in-out infinite;
+}
+@utility animate-defile {
+  animation: defile 28s linear infinite;
+}
+@utility animate-remplit {
+  transform-origin: left;
+  animation: remplit var(--duree, 4.5s) linear both;
+}
+@utility animate-tampon {
+  animation: tampon 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  animation-delay: var(--d, 0ms);
+}
+@utility animate-balance {
+  animation: balance 2.4s ease-in-out infinite;
+}
+@utility animate-glisse {
+  animation: glisse-g 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+@utility animate-deroule {
+  animation: deroule 0.9s cubic-bezier(0.6, 0, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+@utility animate-eclat {
+  animation: eclat 0.9s cubic-bezier(0.1, 0.7, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+/* Reflet lumineux qui passe sur un bouton ou un badge */
+@utility brillance {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    z-index: -1;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--card) 55%, transparent), transparent);
+    animation: brille 3.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+}
+
+/* Mots qui montent un par un */
+.mot {
+  display: inline-block;
+  will-change: transform;
+}
+.mots-auto .mot {
+  animation: mot-in 0.7s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+  animation-delay: calc(var(--d, 0ms) + var(--i, 0) * 80ms);
+}
+
+/* Apparition au défilement : activée par un petit script avant l'affichage */
+.reveal-ready [data-reveal] {
+  transition:
+    opacity 0.75s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter 0.8s ease;
+  transition-delay: var(--d, 0ms);
+}
+.reveal-ready [data-reveal]:not([data-vu]) { opacity: 0; }
+.reveal-ready [data-reveal="up"]:not([data-vu]) { transform: translateY(32px); }
+.reveal-ready [data-reveal="zoom"]:not([data-vu]) { transform: scale(0.9); }
+.reveal-ready [data-reveal="left"]:not([data-vu]) { transform: translateX(-32px); }
+.reveal-ready [data-reveal="right"]:not([data-vu]) { transform: translateX(32px); }
+.reveal-ready [data-reveal="blur"]:not([data-vu]) { transform: translateY(14px); filter: blur(10px); }
+.reveal-ready [data-mots] .mot {
+  transition:
+    opacity 0.55s ease,
+    transform 0.65s cubic-bezier(0.2, 0.9, 0.25, 1.15);
+  transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 70ms);
+}
+.reveal-ready [data-mots]:not([data-vu]) .mot { opacity: 0; transform: translateY(0.6em) rotate(4deg); }
+/* Photos : léger dézoom quand la carte apparaît */
+.img-reveal { transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.reveal-ready [data-reveal]:not([data-vu]) .img-reveal { transform: scale(1.18); }
+
+/* Filet de sécurité : si le script de la page ne démarre pas, tout s'affiche après 3 s */
+@keyframes montre { to { opacity: 1; transform: none; filter: none; } }
+.reveal-ready:not(.anim-on) [data-reveal],
+.reveal-ready:not(.anim-on) [data-mots] .mot,
+.reveal-ready:not(.anim-on) .img-reveal {
+  animation: montre 0.4s 3s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

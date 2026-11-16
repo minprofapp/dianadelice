@@ -1,0 +1,35 @@
+{
+  "name": "Diana Croquettes — Délices & Jus Frais",
+  "short_name": "Diana",
+  "description": "Commandez croquettes croustillantes, jus de bissap et gnamakoudji chez Diana Croquettes, livrés à Anyama et au CAFOP Abobo.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "fr",
+  "dir": "ltr",
+  "background_color": "#fbf6ec",
+  "theme_color": "#8e1b2a",
+  "categories": ["food", "shopping", "lifestyle"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Commander des délices",
+      "short_name": "Menu",
+      "description": "Voir le menu et commander",
+      "url": "/#menu",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Suivre ma commande",
+      "short_name": "Suivi",
+      "description": "Suivre le statut de votre commande en direct",
+      "url": "/suivi",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
