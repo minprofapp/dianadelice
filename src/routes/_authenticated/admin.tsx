@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatFCFA, NOM_BOUTIQUE } from "@/lib/commande";
-import { CLASSE_STATUT, LIBELLE_STATUT, STATUTS, type Statut } from "@/lib/statuts";
+import { CLASSE_STATUT, LIBELLE_STATUT, STATUTS, statutSuivant, type Statut } from "@/lib/statuts";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/diana-logo.png.asset.json";
 import { TableauBordPrincipal } from "@/components/admin/TableauBordPrincipal";
@@ -34,11 +34,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type Article = { nom: string; format: string | null; montant: number };
 
-const SUIVANT: Partial<Record<Statut, Statut>> = {
-  en_attente: "confirmee",
-  confirmee: "en_livraison",
-  en_livraison: "livree",
-};
 
 function bip() {
   try {
@@ -336,7 +331,7 @@ function OngletCommandes({ commandes, isLoading }: { commandes: CommandeBrute[];
         <div className="grid gap-3 md:grid-cols-2">
           {affichees.map((c) => {
             const statut = c.statut as Statut;
-            const suivant = SUIVANT[statut];
+            const suivant = statutSuivant(statut);
             const tel = c.client_telephone.replace(/^\+/, "");
             const telWa = tel.startsWith("225") ? tel : `225${tel}`;
             return (

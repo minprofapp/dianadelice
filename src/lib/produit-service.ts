@@ -16,7 +16,11 @@ export const TAILLE_IMAGE_MAX = 15 * 1024 * 1024; // avant compression
 
 export type RowProduit = Tables<"produits">;
 
-function estObjet(v: unknown): v is Record<string, unknown> {
+type ObjetBrut = {
+  id?: unknown; url?: unknown; principale?: unknown; ordre?: unknown; nomFichier?: unknown; chemin?: unknown;
+  nom?: unknown; prix?: unknown; stock?: unknown; sku?: unknown; disponible?: unknown; image?: unknown;
+};
+function estObjet(v: unknown): v is ObjetBrut {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 

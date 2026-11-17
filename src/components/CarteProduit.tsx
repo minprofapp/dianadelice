@@ -6,28 +6,16 @@ import { MONTANTS_RAPIDES, MONTANT_MIN, MONTANT_MAX, formatFCFA, verifierMontant
 import { usePanier } from "@/lib/panier";
 import { cn } from "@/lib/utils";
 import { Icone } from "@/components/Icone";
-import { decoderProduit } from "@/lib/produit-service";
+import { decoderProduit, type RowProduit } from "@/lib/produit-service";
 
-type ProduitRow = {
-  id: string;
-  slug: string;
-  nom: string;
-  description: string;
-  formats: string[];
-  image_url: string | null;
-  disponible: boolean;
-  ordre?: number;
-};
+type ProduitRow = RowProduit;
 
 export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; prioritaire?: boolean }) {
   const { ajouter } = usePanier();
 
   // Décodage des métadonnées enrichies (images multiples, variantes, badges)
   const enrichi = useMemo(() => {
-    return decoderProduit({
-      ...produit,
-      ordre: produit.ordre ?? 0,
-    });
+    return decoderProduit(produit);
   }, [produit]);
 
   const [indexImage, setIndexImage] = useState(0);
@@ -110,6 +98,8 @@ export function CarteProduit({ produit, prioritaire }: { produit: ProduitRow; pr
   }
 
   const estDisponible = enrichi.disponible && enrichi.stock > 0;
+  const varianteActive = aDesVariantes ? enrichi.variantes.find((v) => v.nom === varianteChoisie) : null;
+  const varianteEpuisee = !!varianteActive && (!varianteActive.disponible || varianteActive.stock <= 0);
 
   return (
     <article

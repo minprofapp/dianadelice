@@ -14,6 +14,8 @@ type ProduitSimple = {
   slug: string;
   formats: string[];
   disponible: boolean;
+  masque: boolean;
+  stock: number;
 };
 
 const MONTANTS_EXPRESS = [500, 1000, 1500, 2000, 5000] as const;
@@ -22,7 +24,7 @@ export function SaisieMontantExpress({ produits }: { produits: ProduitSimple[] }
   const { ajouter } = usePanier();
   const navigate = useNavigate();
 
-  const dispos = produits.filter((p) => p.disponible);
+  const dispos = produits.filter((p) => p.disponible && !p.masque && p.stock > 0);
   const [produitId, setProduitId] = useState<string>(dispos[0]?.id || "");
   const produitActif = dispos.find((p) => p.id === produitId) || dispos[0];
 
@@ -39,7 +41,7 @@ export function SaisieMontantExpress({ produits }: { produits: ProduitSimple[] }
     setProduitId(id);
     const p = dispos.find((x) => x.id === id);
     if (p && p.formats.length > 0) {
-      setFormatChoisi(p.formats[0]);
+      setFormatChoisi(p.formats[0] ?? null);
     } else {
       setFormatChoisi(null);
     }
@@ -65,6 +67,7 @@ export function SaisieMontantExpress({ produits }: { produits: ProduitSimple[] }
   }
 
   function commander(versPanier = false) {
+    if (!produitActif) return;
     const err = verifierMontant(montant);
     if (err) {
       setErreur(err);

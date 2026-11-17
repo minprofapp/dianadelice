@@ -17,7 +17,7 @@ export function imageProduit(p: { slug: string; image_url: string | null }): str
 export const produitsQuery = queryOptions({
   queryKey: ["produits"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("produits").select("*").order("ordre");
+    const { data, error } = await supabase.from("produits").select("*").eq("masque", false).order("ordre");
     if (error) throw error;
     return data;
   },
