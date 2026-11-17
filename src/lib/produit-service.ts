@@ -1,3 +1,4 @@
+import type { Json, Tables, TablesInsert } from "@/integrations/supabase/types";
 import type { ImageArticle, ProduitEnrichi, VarianteProduit } from "./types-produit";
 import croquettes from "@/assets/croquettes.jpg.asset.json";
 import bissap from "@/assets/bissap.jpg.asset.json";
@@ -9,175 +10,175 @@ const IMAGES_DEFAUT: Record<string, string> = {
   gnamakoudji: gnamakoudji.url,
 };
 
-type RowProduit = {
-  id: string;
-  slug: string;
-  nom: string;
-  description: string;
-  formats: string[];
-  image_url: string | null;
-  disponible: boolean;
-  ordre: number;
-  created_at?: string;
-};
+export const PRIX_MINIMUM_ARTICLE = 500;
+export const FORMATS_IMAGE_ACCEPTES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+export const TAILLE_IMAGE_MAX = 15 * 1024 * 1024; // avant compression
 
-type MetaProduit = {
-  descriptionCourte?: string;
-  descriptionDetaillee?: string;
-  categorie?: string;
-  sousCategorie?: string;
-  prix?: number;
-  prixPromo?: number | null;
-  stock?: number;
-  seuilAlerte?: number;
-  masque?: boolean;
-  populaire?: boolean;
-  nouveau?: boolean;
-  recommande?: boolean;
-  sku?: string;
-  images?: ImageArticle[];
-  variantes?: VarianteProduit[];
-};
+export type RowProduit = Tables<"produits">;
 
-const BALISE_META_DEBUT = "<!-- META:";
-const BALISE_META_FIN = " -->";
+function estObjet(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
 
-/** Décode une ligne de base de données en ProduitEnrichi complet */
+function lireImages(brut: Json): ImageArticle[] {
+  if (!Array.isArray(brut)) return [];
+  const images: ImageArticle[] = [];
+  brut.forEach((item, i) => {
+    if (!estObjet(item) || typeof item.url !== "string" || !item.url) return;
+    images.push({
+      id: typeof item.id === "string" ? item.id : `img-${i}`,
+      url: item.url,
+      principale: item.principale === true,
+      ordre: typeof item.ordre === "number" ? item.ordre : i + 1,
+      nomFichier: typeof item.nomFichier === "string" ? item.nomFichier : undefined,
+      chemin: typeof item.chemin === "string" ? item.chemin : undefined,
+    });
+  });
+  images.sort((a, b) => a.ordre - b.ordre);
+  return images;
+}
+
+function lireVariantes(brut: Json): VarianteProduit[] {
+  if (!Array.isArray(brut)) return [];
+  const variantes: VarianteProduit[] = [];
+  brut.forEach((item, i) => {
+    if (!estObjet(item) || typeof item.nom !== "string" || !item.nom.trim()) return;
+    variantes.push({
+      id: typeof item.id === "string" ? item.id : `var-${i}`,
+      nom: item.nom,
+      prix: typeof item.prix === "number" ? item.prix : 0,
+      stock: typeof item.stock === "number" ? item.stock : 0,
+      sku: typeof item.sku === "string" ? item.sku : "",
+      disponible: item.disponible !== false,
+      image: typeof item.image === "string" ? item.image : null,
+    });
+  });
+  return variantes;
+}
+
+/** Transforme une ligne de la base en article complet */
 export function decoderProduit(row: RowProduit): ProduitEnrichi {
-  let texteDescription = row.description || "";
-  let meta: MetaProduit = {};
-
-  const debutIdx = texteDescription.indexOf(BALISE_META_DEBUT);
-  if (debutIdx !== -1) {
-    const finIdx = texteDescription.indexOf(BALISE_META_FIN, debutIdx);
-    if (finIdx !== -1) {
-      const jsonStr = texteDescription.substring(debutIdx + BALISE_META_DEBUT.length, finIdx);
-      try {
-        meta = JSON.parse(jsonStr);
-      } catch (e) {
-        console.warn("Erreur de décodage des métadonnées du produit", row.id, e);
-      }
-      texteDescription = texteDescription.substring(0, debutIdx).trim();
-    }
-  }
-
-  // Catégorie déduite par défaut si non spécifiée
-  let categorieDefaut = "Croquettes";
-  if (row.slug.includes("bissap") || row.slug.includes("gnama") || row.slug.includes("jus")) {
-    categorieDefaut = "Jus naturels";
-  }
-
-  // Gestion des images
-  let images: ImageArticle[] = meta.images || [];
+  let images = lireImages(row.images);
   if (images.length === 0) {
-    const urlInitiale = row.image_url || IMAGES_DEFAUT[row.slug] || null;
-    if (urlInitiale) {
-      images = [
-        {
-          id: `img-${row.id}-1`,
-          url: urlInitiale,
-          principale: true,
-          ordre: 1,
-          nomFichier: `${row.slug}.jpg`,
-        },
-      ];
-    }
-  } else {
-    // S'assurer qu'au moins une image est marquée comme principale
-    if (!images.some((img) => img.principale) && images.length > 0) {
-      images[0].principale = true;
-    }
+    const url = row.image_url || IMAGES_DEFAUT[row.slug] || null;
+    if (url) images = [{ id: `img-${row.id}-1`, url, principale: true, ordre: 1 }];
   }
-
-  // Variantes
-  let variantes: VarianteProduit[] = meta.variantes || [];
-  if (variantes.length === 0 && row.formats && row.formats.length > 0) {
-    variantes = row.formats.map((f, i) => ({
-      id: `var-${row.id}-${i}`,
-      nom: f,
-      prix: meta.prix ?? (f.toLowerCase().includes("bouteille") ? 1000 : 500),
-      stock: meta.stock ?? 30,
-      sku: `${row.slug.toUpperCase().slice(0, 4)}-${f.slice(0, 3).toUpperCase()}`,
-      disponible: row.disponible,
-    }));
+  if (images.length > 0 && !images.some((img) => img.principale)) {
+    images = images.map((img, i) => ({ ...img, principale: i === 0 }));
   }
-
-  const descCourte = meta.descriptionCourte || texteDescription.slice(0, 100) || row.nom;
-  const descDetaillee = meta.descriptionDetaillee || texteDescription || descCourte;
 
   return {
     id: row.id,
     slug: row.slug,
     nom: row.nom,
-    descriptionCourte: descCourte,
-    descriptionDetaillee: descDetaillee,
-    categorie: meta.categorie || categorieDefaut,
-    sousCategorie: meta.sousCategorie || "",
-    prix: meta.prix ?? 1000,
-    prixPromo: meta.prixPromo ?? null,
-    stock: meta.stock ?? 25,
-    seuilAlerte: meta.seuilAlerte ?? 5,
+    descriptionCourte: row.description_courte || row.description.slice(0, 120),
+    descriptionDetaillee: row.description,
+    categorie: row.categorie,
+    sousCategorie: row.sous_categorie,
+    prix: row.prix,
+    prixPromo: row.prix_promo,
+    stock: row.stock,
+    seuilAlerte: row.seuil_alerte,
     disponible: row.disponible,
-    masque: meta.masque ?? false,
-    populaire: meta.populaire ?? false,
-    nouveau: meta.nouveau ?? false,
-    recommande: meta.recommande ?? false,
-    sku: meta.sku || row.slug.toUpperCase(),
+    masque: row.masque,
+    populaire: row.populaire,
+    nouveau: row.nouveau,
+    recommande: row.recommande,
+    sku: row.sku,
     images,
-    variantes,
-    formats: row.formats || [],
-    ordre: row.ordre ?? 0,
+    variantes: lireVariantes(row.variantes),
+    formats: row.formats ?? [],
+    ordre: row.ordre,
     created_at: row.created_at,
   };
 }
 
-/** Encode un ProduitEnrichi pour l'enregistrement dans la table 'produits' de Supabase */
-export function encoderProduit(p: ProduitEnrichi): {
-  nom: string;
-  slug: string;
-  description: string;
-  formats: string[];
-  image_url: string | null;
-  disponible: boolean;
-  ordre: number;
-} {
-  // L'image principale sert d'image_url publique compatible
-  const imgPrincipale = p.images.find((img) => img.principale) || p.images[0];
-  const imageUrl = imgPrincipale ? imgPrincipale.url : null;
-
-  // Variantes alimentent également le champ 'formats' requis par passer_commande()
-  const formats = p.variantes.length > 0 ? p.variantes.map((v) => v.nom) : p.formats.length > 0 ? p.formats : ["Standard"];
-
-  const meta: MetaProduit = {
-    descriptionCourte: p.descriptionCourte,
-    descriptionDetaillee: p.descriptionDetaillee,
-    categorie: p.categorie,
-    sousCategorie: p.sousCategorie,
-    prix: p.prix,
-    prixPromo: p.prixPromo,
-    stock: p.stock,
-    seuilAlerte: p.seuilAlerte,
-    masque: p.masque,
-    populaire: p.populaire,
-    nouveau: p.nouveau,
-    recommande: p.recommande,
-    sku: p.sku,
-    images: p.images,
-    variantes: p.variantes,
-  };
-
-  const texteBase = p.descriptionDetaillee || p.descriptionCourte || p.nom;
-  const descriptionComplete = `${texteBase}\n${BALISE_META_DEBUT}${JSON.stringify(meta)}${BALISE_META_FIN}`;
+/** Prépare un article pour l'enregistrement en base */
+export function encoderProduit(p: ProduitEnrichi): Omit<TablesInsert<"produits">, "id" | "created_at"> {
+  const images = [...p.images]
+    .sort((a, b) => a.ordre - b.ordre)
+    .map((img, i) => ({ ...img, ordre: i + 1 }));
+  const principale = images.find((img) => img.principale) ?? images[0];
+  const formats = p.variantes.length > 0 ? p.variantes.map((v) => v.nom.trim()) : p.formats;
 
   return {
     nom: p.nom.trim(),
     slug: p.slug.trim(),
-    description: descriptionComplete,
+    description: (p.descriptionDetaillee || p.descriptionCourte || p.nom).trim(),
+    description_courte: p.descriptionCourte.trim(),
+    categorie: p.categorie.trim() || "Autre",
+    sous_categorie: p.sousCategorie.trim(),
+    prix: Math.max(0, Math.round(p.prix)),
+    prix_promo: p.prixPromo != null && p.prixPromo > 0 ? Math.round(p.prixPromo) : null,
+    stock: Math.max(0, Math.round(p.stock)),
+    seuil_alerte: Math.max(0, Math.round(p.seuilAlerte)),
+    disponible: p.disponible,
+    masque: p.masque,
+    populaire: p.populaire,
+    nouveau: p.nouveau,
+    recommande: p.recommande,
+    sku: p.sku.trim(),
+    images: images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      principale: principale ? img.id === principale.id : false,
+      ordre: img.ordre,
+      ...(img.nomFichier ? { nomFichier: img.nomFichier } : {}),
+      ...(img.chemin ? { chemin: img.chemin } : {}),
+    })),
+    variantes: p.variantes.map((v) => ({
+      id: v.id,
+      nom: v.nom.trim(),
+      prix: Math.max(0, Math.round(v.prix)),
+      stock: Math.max(0, Math.round(v.stock)),
+      sku: v.sku.trim(),
+      disponible: v.disponible,
+      image: v.image ?? null,
+    })),
     formats,
-    image_url: imageUrl,
-    disponible: p.disponible && !p.masque,
+    image_url: principale?.url ?? null,
     ordre: p.ordre,
+    updated_at: new Date().toISOString(),
   };
+}
+
+/** Vérifie un article avant enregistrement ; renvoie un message d'erreur ou null */
+export function verifierProduit(p: ProduitEnrichi): string | null {
+  if (p.nom.trim().length < 2) return "Le nom de l'article doit comporter au moins 2 caractères.";
+  if (!Number.isFinite(p.prix) || p.prix < PRIX_MINIMUM_ARTICLE)
+    return `Le prix doit être d'au moins ${PRIX_MINIMUM_ARTICLE} FCFA.`;
+  if (p.prixPromo != null && (p.prixPromo < PRIX_MINIMUM_ARTICLE || p.prixPromo >= p.prix))
+    return `Le prix promo doit être entre ${PRIX_MINIMUM_ARTICLE} FCFA et le prix normal.`;
+  if (p.stock < 0 || p.seuilAlerte < 0) return "Le stock et le seuil d'alerte ne peuvent pas être négatifs.";
+  const noms = new Set<string>();
+  for (const v of p.variantes) {
+    const nom = v.nom.trim().toLowerCase();
+    if (!nom) return "Chaque variante doit avoir un nom.";
+    if (noms.has(nom)) return `La variante « ${v.nom} » existe deux fois.`;
+    noms.add(nom);
+    if (v.prix < PRIX_MINIMUM_ARTICLE) return `La variante « ${v.nom} » doit coûter au moins ${PRIX_MINIMUM_ARTICLE} FCFA.`;
+    if (v.stock < 0) return `Le stock de « ${v.nom} » ne peut pas être négatif.`;
+  }
+  return null;
+}
+
+/** Prix réellement payé (promo si présente) */
+export function prixAffiche(p: Pick<ProduitEnrichi, "prix" | "prixPromo">): number {
+  return p.prixPromo != null && p.prixPromo > 0 && p.prixPromo < p.prix ? p.prixPromo : p.prix;
+}
+
+/** Plus petit prix affichable pour l'article (variantes comprises) */
+export function prixDepart(p: ProduitEnrichi): number {
+  const dispo = p.variantes.filter((v) => v.disponible && v.stock > 0);
+  if (dispo.length > 0) return Math.min(...dispo.map((v) => v.prix));
+  return prixAffiche(p);
+}
+
+export type EtatStock = "rupture" | "faible" | "ok";
+export function etatStock(p: Pick<ProduitEnrichi, "stock" | "seuilAlerte" | "disponible">): EtatStock {
+  if (!p.disponible || p.stock <= 0) return "rupture";
+  if (p.stock <= p.seuilAlerte) return "faible";
+  return "ok";
 }
 
 /** Génère un slug propre à partir d'un nom */
@@ -192,116 +193,76 @@ export function genererSlug(nom: string): string {
   );
 }
 
-/** Crée une copie indépendante complète d'un produit (Duplication) */
+function suffixe(): string {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+}
+
+/** Crée une copie complète et indépendante d'un article (jamais le même identifiant) */
 export function dupliquerProduit(original: ProduitEnrichi): ProduitEnrichi {
-  const timestamp = Date.now().toString(36);
+  const s = suffixe();
   const nouveauNom = `Copie de ${original.nom}`;
-  const baseSlug = genererSlug(nouveauNom);
-  const nouveauSlug = `${baseSlug}-${timestamp}`;
-  const nouveauSku = original.sku ? `${original.sku}-COP` : `SKU-${timestamp.toUpperCase()}`;
-
-  // Duplication propre des images avec nouveaux identifiants
-  const nouvellesImages: ImageArticle[] = original.images.map((img, idx) => ({
-    ...img,
-    id: `img-dup-${timestamp}-${idx}`,
-  }));
-
-  // Duplication propre des variantes avec nouveaux identifiants
-  const nouvellesVariantes: VarianteProduit[] = original.variantes.map((v, idx) => ({
-    ...v,
-    id: `var-dup-${timestamp}-${idx}`,
-    sku: v.sku ? `${v.sku}-COP` : undefined,
-  }));
-
   return {
     ...original,
-    id: "", // Ne jamais réutiliser l'ID de l'original
+    id: "",
     nom: nouveauNom,
-    slug: nouveauSlug,
-    sku: nouveauSku,
-    disponible: false, // Toujours désactivé / brouillon au départ
+    slug: `${genererSlug(nouveauNom)}-${s}`,
+    sku: original.sku ? `${original.sku}-COPIE` : `SKU-${s.toUpperCase()}`,
+    disponible: false,
     masque: true,
-    nouveau: true,
-    populaire: false,
-    images: nouvellesImages,
-    variantes: nouvellesVariantes,
+    images: original.images.map((img, i) => ({ ...img, id: `img-${s}-${i}` })),
+    variantes: original.variantes.map((v, i) => ({
+      ...v,
+      id: `var-${s}-${i}`,
+      sku: v.sku ? `${v.sku}-COPIE` : "",
+    })),
     formats: [...original.formats],
-    created_at: new Date().toISOString(),
+    created_at: undefined,
   };
 }
 
-/** Compression & optimisation d'image côté client via Canvas HTML5 */
+/** Compresse et redimensionne une photo dans le navigateur (WebP, sinon JPEG) */
 export async function optimiserImage(
   fichier: File,
   options: { maxDim?: number; qualite?: number } = {},
-): Promise<{ url: string; largeur: number; hauteur: number; tailleAvant: number; tailleApres: number }> {
-  const { maxDim = 1000, qualite = 0.82 } = options;
-
-  const formatsAcceptes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
-  if (!formatsAcceptes.includes(fichier.type.toLowerCase())) {
-    throw new Error("Format d'image non supporté. Utilisez JPG, PNG ou WEBP.");
+): Promise<{ blob: Blob; type: string; largeur: number; hauteur: number; tailleAvant: number; tailleApres: number }> {
+  const { maxDim = 1200, qualite = 0.82 } = options;
+  if (!FORMATS_IMAGE_ACCEPTES.includes(fichier.type.toLowerCase())) {
+    throw new Error("Format non accepté. Utilisez JPG, JPEG, PNG ou WEBP.");
+  }
+  if (fichier.size > TAILLE_IMAGE_MAX) {
+    throw new Error("La photo dépasse 15 Mo.");
   }
 
-  if (fichier.size > 15 * 1024 * 1024) {
-    throw new Error("L'image dépasse la limite de 15 Mo.");
-  }
-
-  return new Promise((resolve, reject) => {
-    const lecteur = new FileReader();
-    lecteur.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let { width, height } = img;
-
-        // Redimensionnement proportionnel
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Impossible d'initialiser le contexte de dessin."));
-          return;
-        }
-
-        // Amélioration du lissage
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Compression en WebP si possible, sinon JPEG
-        let dataUrl = "";
-        try {
-          dataUrl = canvas.toDataURL("image/webp", qualite);
-        } catch {
-          dataUrl = canvas.toDataURL("image/jpeg", qualite);
-        }
-
-        // Calcul de la taille approximative
-        const base64Length = dataUrl.length - (dataUrl.indexOf(",") + 1);
-        const tailleApres = Math.round((base64Length * 3) / 4);
-
-        resolve({
-          url: dataUrl,
-          largeur: width,
-          hauteur: height,
-          tailleAvant: fichier.size,
-          tailleApres,
-        });
-      };
-      img.onerror = () => reject(new Error("Impossible de lire l'image."));
-      img.src = e.target?.result as string;
-    };
-    lecteur.onerror = () => reject(new Error("Erreur de lecture du fichier."));
-    lecteur.readAsDataURL(fichier);
+  const bitmap = await createImageBitmap(fichier).catch(() => {
+    throw new Error("Impossible de lire cette photo.");
   });
+  let { width, height } = bitmap;
+  if (width > maxDim || height > maxDim) {
+    const ratio = Math.min(maxDim / width, maxDim / height);
+    width = Math.round(width * ratio);
+    height = Math.round(height * ratio);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Impossible de préparer la photo.");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const versBlob = (type: string) =>
+    new Promise<Blob | null>((resolve) => canvas.toBlob((b) => resolve(b), type, qualite));
+  let blob = await versBlob("image/webp");
+  if (!blob || blob.type !== "image/webp") blob = await versBlob("image/jpeg");
+  if (!blob) throw new Error("Compression impossible.");
+
+  return { blob, type: blob.type, largeur: width, hauteur: height, tailleAvant: fichier.size, tailleApres: blob.size };
+}
+
+export function formaterTaille(octets: number): string {
+  if (octets < 1024) return `${octets} o`;
+  if (octets < 1024 * 1024) return `${Math.round(octets / 1024)} Ko`;
+  return `${(octets / (1024 * 1024)).toFixed(1)} Mo`;
 }

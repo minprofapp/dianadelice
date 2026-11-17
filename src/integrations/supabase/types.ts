@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           frais_livraison: number
           id: string
+          livreur_id: string | null
           note: string | null
           numero: string
           repere: string
@@ -38,6 +39,7 @@ export type Database = {
           created_at?: string
           frais_livraison?: number
           id?: string
+          livreur_id?: string | null
           note?: string | null
           numero?: string
           repere: string
@@ -54,6 +56,7 @@ export type Database = {
           created_at?: string
           frais_livraison?: number
           id?: string
+          livreur_id?: string | null
           note?: string | null
           numero?: string
           repere?: string
@@ -65,6 +68,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "commandes_livreur_id_fkey"
+            columns: ["livreur_id"]
+            isOneToOne: false
+            referencedRelation: "livreurs"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "commandes_zone_id_fkey"
             columns: ["zone_id"]
             isOneToOne: false
@@ -73,39 +83,108 @@ export type Database = {
           },
         ]
       }
+      livreurs: {
+        Row: {
+          actif: boolean
+          created_at: string
+          id: string
+          nom: string
+          telephone: string
+        }
+        Insert: {
+          actif?: boolean
+          created_at?: string
+          id?: string
+          nom: string
+          telephone?: string
+        }
+        Update: {
+          actif?: boolean
+          created_at?: string
+          id?: string
+          nom?: string
+          telephone?: string
+        }
+        Relationships: []
+      }
       produits: {
         Row: {
+          categorie: string
           created_at: string
           description: string
+          description_courte: string
           disponible: boolean
           formats: string[]
           id: string
           image_url: string | null
+          images: Json
+          masque: boolean
           nom: string
+          nouveau: boolean
           ordre: number
+          populaire: boolean
+          prix: number
+          prix_promo: number | null
+          recommande: boolean
+          seuil_alerte: number
+          sku: string
           slug: string
+          sous_categorie: string
+          stock: number
+          updated_at: string
+          variantes: Json
         }
         Insert: {
+          categorie?: string
           created_at?: string
           description?: string
+          description_courte?: string
           disponible?: boolean
           formats?: string[]
           id?: string
           image_url?: string | null
+          images?: Json
+          masque?: boolean
           nom: string
+          nouveau?: boolean
           ordre?: number
+          populaire?: boolean
+          prix?: number
+          prix_promo?: number | null
+          recommande?: boolean
+          seuil_alerte?: number
+          sku?: string
           slug: string
+          sous_categorie?: string
+          stock?: number
+          updated_at?: string
+          variantes?: Json
         }
         Update: {
+          categorie?: string
           created_at?: string
           description?: string
+          description_courte?: string
           disponible?: boolean
           formats?: string[]
           id?: string
           image_url?: string | null
+          images?: Json
+          masque?: boolean
           nom?: string
+          nouveau?: boolean
           ordre?: number
+          populaire?: boolean
+          prix?: number
+          prix_promo?: number | null
+          recommande?: boolean
+          seuil_alerte?: number
+          sku?: string
           slug?: string
+          sous_categorie?: string
+          stock?: number
+          updated_at?: string
+          variantes?: Json
         }
         Relationships: []
       }

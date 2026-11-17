@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { formatFCFA, nettoyerTelephone } from "@/lib/commande";
 import { lireHistorique, type CommandeLocale } from "@/lib/historique";
 import { usePanier } from "@/lib/panier";
-import { CLASSE_STATUT, LIBELLE_STATUT, MESSAGE_STATUT, type Statut } from "@/lib/statuts";
+import { CLASSE_STATUT, ETAPES_COMMANDE, LIBELLE_STATUT, MESSAGE_STATUT, type Statut } from "@/lib/statuts";
 import { cn } from "@/lib/utils";
 import { Icone } from "@/components/Icone";
 import { TexteAnime } from "@/components/TexteAnime";
@@ -36,7 +36,7 @@ type Resultat = {
   created_at: string;
 };
 
-const ETAPES: Statut[] = ["en_attente", "confirmee", "en_livraison", "livree"];
+const ETAPES = ETAPES_COMMANDE;
 
 function Suivi() {
   const [numero, setNumero] = useState("");
@@ -146,7 +146,7 @@ function Suivi() {
             </div>
             <p className="font-medium">{MESSAGE_STATUT[res.statut]}</p>
             {res.statut !== "annulee" && (
-              <ol className="grid grid-cols-4 gap-1">
+              <ol className="grid grid-cols-3 gap-x-1 gap-y-2 sm:grid-cols-6">
                 {ETAPES.map((e, i) => (
                   <li key={e} className="space-y-1 text-center text-xs">
                     <div className="h-2 overflow-hidden rounded-full bg-muted">
